@@ -18,19 +18,24 @@ if(NOT WIN32)
 endif()
 
 set(ICON_GEN_DIR ${CMAKE_BINARY_DIR}/breeze-icons)
+file(GLOB_RECURSE icon_deps ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/*.svg")
 if(WITH_ICON_GENERATION)
     # Auto-generate 24px monochrome icons from 22px versions
-    add_custom_target(breeze-generate-24px-versions ALL
+    add_custom_command(OUTPUT ${ICON_GEN_DIR}/generation-done
+        COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/generate-24px-versions.py ${CMAKE_CURRENT_SOURCE_DIR} ${ICON_GEN_DIR}
+        COMMAND ${CMAKE_COMMAND} -E touch ${ICON_GEN_DIR}/generation-done
+        DEPENDS ${CMAKE_SOURCE_DIR}/generate-24px-versions.py ${icon_deps}
         COMMENT "Generating 24px icons"
-        COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/generate-24px-versions.py
-                ${CMAKE_CURRENT_SOURCE_DIR}
-                ${ICON_GEN_DIR}
+        USES_TERMINAL
     )
 else()
     # create the target dir, we need it for resource creation
-    add_custom_target(breeze-generate-24px-versions ALL
-        COMMENT "Generating 24px icons placeholder"
+    add_custom_command(OUTPUT ${ICON_GEN_DIR}/generation-done
         COMMAND ${CMAKE_COMMAND} -E make_directory ${ICON_GEN_DIR}
+        COMMAND ${CMAKE_COMMAND} -E touch ${ICON_GEN_DIR}/generation-done
+        DEPENDS ${CMAKE_SOURCE_DIR}/generate-24px-versions.py ${icon_deps}
+        COMMENT "Generating 24px icons placeholder"
+        USES_TERMINAL
     )
 endif()
 
